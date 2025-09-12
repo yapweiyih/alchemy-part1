@@ -3,10 +3,10 @@
 source configuration.sh
 
 # Delete existing registered agentspace agent
-bash register.sh delete $OLD_AGENT_ID
+# bash register.sh delete $OLD_AGENT_ID
 
 # Delete existing auth
-bash register.sh delete-auth $AUTH_ID
+# bash register.sh delete-auth $AUTH_ID
 
 # Create new auth
 bash register.sh create-auth $AUTH_ID
