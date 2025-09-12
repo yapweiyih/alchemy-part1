@@ -1,4 +1,48 @@
-# Agentspace Auth
+# Deploy Custom ADK Agent to Agentspace with authentication support.
+
+## Repository Objective
+
+This repository provides a complete solution for deploying custom ADK (Agent Development Kit) agents to Google Cloud's Agentspace platform with built-in authentication support. The primary goal is to enable developers to create, deploy, and register custom AI agents that can authenticate users via OAuth2 (using personal email accounts) and perform authorized actions on their behalf, such as accessing user information and sending emails. The repository streamlines the entire deployment pipeline from initial setup in Google Cloud Shell to final registration and testing in Agentspace.
+
+## File Structure
+
+The repository is organized into the following structure:
+```text
+.
+├── auth_agent
+│   ├── ae_deploy.py
+│   ├── agent_registration.ipynb
+│   ├── auth_agent
+│   │   ├── __init__.py
+│   │   └── agent.py
+│   ├── configuration.sh
+│   ├── pyproject.toml
+│   ├── register.sh
+│   ├── run_register_auth.sh
+│   └── uv.lock
+└── README.md
+```
+
+### Root Level Files:
+- **`README.md`** - Main documentation with step-by-step deployment instructions
+
+### `/auth_agent/` Directory:
+The main implementation directory containing:
+
+**Core Files:**
+- **`ae_deploy.py`** - Python script for deploying the ADK agent to Agent Engine
+- **`agent_registration.ipynb`** - Jupyter notebook for creating Agentspace Authentication ID
+- **`configuration.sh`** - Shell script for setting environment variables and configuration
+- **`run_register_auth.sh`** - Main script to execute the registration process with authentication
+- **`register.sh`** - Helper script for the registration process
+
+**Python Virtual Environment:**
+- **`pyproject.toml`** - Python project configuration and dependencies
+- **`uv.lock`** - Lock file for UV package manager dependencies
+
+**`/auth_agent/auth_agent/` Subdirectory:**
+Python package containing the actual ADK agent implementation:
+- **`agent.py`** - Main agent implementation with authentication logic
 
 ## Prerequisites
 - Open Cloud Shell, and click "Open Editor".
