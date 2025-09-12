@@ -27,7 +27,6 @@ The repository is organized into the following structure:
 - **`README.md`** - Main documentation with step-by-step deployment instructions
 
 ### `/auth_agent/` Directory:
-The main implementation directory containing:
 
 **Core Files:**
 - **`ae_deploy.py`** - Python script for deploying the ADK agent to Agent Engine
@@ -40,9 +39,9 @@ The main implementation directory containing:
 - **`pyproject.toml`** - Python project configuration and dependencies
 - **`uv.lock`** - Lock file for UV package manager dependencies
 
-**`/auth_agent/auth_agent/` Subdirectory:**
-Python package containing the actual ADK agent implementation:
-- **`agent.py`** - Main agent implementation with authentication logic
+**`/auth_agent/auth_agent/` ADK Agent directory:**
+- **`agent.py`** - Python package containing the actual ADK agent implementation:
+
 
 ## Prerequisites
 - Open Cloud Shell, and click "Open Editor".
