@@ -1,6 +1,18 @@
 # Agentspace Auth
 
 ## Prerequisites
+- Open Cloud Shell, and click "Open Editor".
+
+![image](assets/cloudshell.png)
+
+- Open a terminal and then git clone the repo by running `git clone https://github.com/yapweiyih/alchemy-part1.git`.
+
+![image](assets/terminal.png)
+
+- Open the repo folder `alchemay-part1`.
+
+![image](assets/open_folder.png)
+
 - Create agentspace `Client ID` and `Client SECRET` using GCP Auth Platform for `Web Application` type. Download the JSON file.
 
 - Copy and paste to store the content of the client secret JSON in Google Secret Manager using key `AGENTSPACE_WEB_SECRET_JSON`.
