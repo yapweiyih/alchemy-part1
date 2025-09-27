@@ -117,3 +117,9 @@ bash run_register_auth.sh
 - Authenticate with your personal email.
 - Enter "get user info"
 - Enter "send email to abc@gmail.com with subject:test, body: harlo"
+
+
+## Testing
+
+Q1: Check authentication
+Q2: Send email to weiyih@google.com, subject: agentspace test, body: testing
