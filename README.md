@@ -85,6 +85,7 @@ STAGING_BUCKET=gs://2025-adk-workshop
 ```
 
 ## Part 1 - Deploy ADK Agent to Agent Engine
+- Change directory `cd auth_agent`
 - Run `uv run ae_deploy.py`, this may take about 3mins.
 - Once it is done, you will get a Reasoning `ENGINE_ID` as shown below.
 ![image](assets/engine_id.png)
