@@ -1,14 +1,11 @@
 #! /bin/env bash
 
-########################################################
-# UPDATE CONFIGURATION HERE
-########################################################
-# Get project number from GOOGLE_CLOUD_PROJECT environment variable
-
 # Source environment variables from .env file
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+echo
+# echo "########################################################"
 if [ -f "${SCRIPT_DIR}/.env" ]; then
   source "${SCRIPT_DIR}/.env"
   echo "Loaded environment variables from .env file"
@@ -16,13 +13,15 @@ else
   echo "Warning: .env file not found in ${SCRIPT_DIR}"
 fi
 
-# Print out the configuration
-echo "  register.sh config:"
 echo "     GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT}"
 echo "     APP_ID: ${APP_ID}"
 echo "     OAUTH_AUTH_URI: ${OAUTH_AUTH_URI}"
-
-########################################################
+echo "     ENGINE_ID: $ENGINE_ID"
+echo "     DISPLAY_NAME: $DISPLAY_NAME"
+echo "     AUTH_ID: $AUTH_ID"
+# echo "########################################################"
+echo
+echo
 
 if [ -n "$GOOGLE_CLOUD_PROJECT" ]; then
   PROJECT_NUMBER=$(gcloud projects describe "$GOOGLE_CLOUD_PROJECT" --format="value(projectNumber)")
@@ -38,16 +37,21 @@ OAUTH_CLIENT_ID=$(gcloud secrets versions access latest --secret="AGENTSPACE_WEB
 OAUTH_CLIENT_SECRET=$(gcloud secrets versions access latest --secret="AGENTSPACE_WEB_CLIENTSECRET" --project="${PROJECT_NUMBER}") # pragma: allowlist secret
 OAUTH_TOKEN_URI="https://oauth2.googleapis.com/token"
 
+ADK_DEPLOYMENT_ID=$ENGINE_ID
 
 usage() {
   echo "Usage: $0 {"
-  echo "  register <ADK_DEPLOYMENT_ID> <DISPLAY_NAME> |"
+  echo "  register |"
   echo "  list [name] |"
   echo "  delete <AGENT_ID> |"
-  echo "  register-auth <ADK_DEPLOYMENT_ID> <AUTH_ID> <DISPLAY_NAME> |"
-  echo "  update <AGENT_ID> <ADK_DEPLOYMENT_ID> <DISPLAY_NAME> |"
-  echo "  update-auth <AGENT_ID> <ADK_DEPLOYMENT_ID> <AUTH_ID> <DISPLAY_NAME>"
+  echo "  register-auth |"
+  echo "  create-auth |"
+  echo "  delete-auth |"
+  echo "  update <AGENT_ID> |"
+  echo "  update-auth <AGENT_ID>"
   echo "}"
+  echo ""
+  echo "Note: All configuration is loaded from .env file"
   exit 1
 }
 
@@ -59,12 +63,7 @@ COMMAND=$1
 
 case $COMMAND in
   register)
-    if [ $# -ne 3 ]; then
-      echo "Error: register requires ADK_DEPLOYMENT_ID and DISPLAY_NAME arguments."
-      usage
-    fi
-    ADK_DEPLOYMENT_ID=$2
-    DISPLAY_NAME=$3
+    # No additional arguments needed - using values from .env
     curl -X POST \
       -H "Authorization: Bearer $(gcloud auth print-access-token)" \
       -H "Content-Type: application/json" \
@@ -84,14 +83,7 @@ case $COMMAND in
       }'
     ;;
   register-auth)
-    if [ $# -ne 4 ]; then
-      echo "Error: register-auth requires ADK_DEPLOYMENT_ID, AUTH_ID, and DISPLAY_NAME arguments."
-      usage
-    fi
-    ADK_DEPLOYMENT_ID=$2
-    AUTH_ID=$3
-    DISPLAY_NAME=$4
-
+    # No additional arguments needed - using values from .env
     curl -X POST \
       -H "Authorization: Bearer $(gcloud auth print-access-token)" \
       -H "Content-Type: application/json" \
@@ -114,11 +106,7 @@ case $COMMAND in
       }'
     ;;
   create-auth)
-    if [ $# -ne 2 ]; then
-      echo "Error: create-auth requires AUTH_ID argument."
-      usage
-    fi
-    AUTH_ID=$2
+    # No additional arguments needed - using AUTH_ID from .env
     curl -X POST \
       -H "Authorization: Bearer $(gcloud auth print-access-token)" \
       -H "Content-Type: application/json" \
@@ -136,11 +124,7 @@ case $COMMAND in
       }'
     ;;
   delete-auth)
-    if [ $# -ne 2 ]; then
-      echo "Error: delete-auth requires AUTH_ID argument."
-      usage
-    fi
-    AUTH_ID=$2
+    # No additional arguments needed - using AUTH_ID from .env
     curl -X DELETE \
       -H "Authorization: Bearer $(gcloud auth print-access-token)" \
       -H "Content-Type: application/json" \
@@ -200,13 +184,13 @@ case $COMMAND in
       "https://discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_NUMBER}/locations/global/collections/default_collection/engines/${APP_ID}/assistants/default_assistant/agents/${AGENT_ID}"
     ;;
   update)
-    if [ $# -ne 4 ]; then
-      echo "Error: update requires AGENT_ID, ADK_DEPLOYMENT_ID, and DISPLAY_NAME arguments."
+    if [ $# -ne 2 ]; then
+      echo "Error: update requires AGENT_ID argument."
       usage
     fi
     AGENT_ID=$2
-    ADK_DEPLOYMENT_ID=$3
-    NEW_DISPLAY_NAME=$4
+    # Using DISPLAY_NAME from .env as the new display name
+    NEW_DISPLAY_NAME=$DISPLAY_NAME
     curl -X PATCH \
       -H "Authorization: Bearer $(gcloud auth print-access-token)" \
       -H "Content-Type: application/json" \
@@ -226,14 +210,13 @@ case $COMMAND in
       }'
     ;;
   update-auth)
-    if [ $# -ne 5 ]; then
-      echo "Error: update-auth requires AGENT_ID, ADK_DEPLOYMENT_ID, AUTH_ID, and DISPLAY_NAME arguments."
+    if [ $# -ne 2 ]; then
+      echo "Error: update-auth requires AGENT_ID argument."
       usage
     fi
     AGENT_ID=$2
-    ADK_DEPLOYMENT_ID=$3
-    AUTH_ID=$4
-    NEW_DISPLAY_NAME=$5
+    # Using values from .env
+    NEW_DISPLAY_NAME=$DISPLAY_NAME
     curl -X PATCH \
       -H "Authorization: Bearer $(gcloud auth print-access-token)" \
       -H "Content-Type: application/json" \

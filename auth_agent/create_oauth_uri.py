@@ -16,15 +16,9 @@ def get_secret(secret_id, project_id):
     return response.payload.data.decode("UTF-8")
 
 
-########################################################
-# UPDATE THIS
-########################################################
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
 CLIENT_JSON = get_secret("AGENTSPACE_WEB_SECRET_JSON", PROJECT_ID)
 
-########################################################
-
-# Get project number from project ID using gcloud
 result = subprocess.run(
     ["gcloud", "projects", "describe", PROJECT_ID, "--format=value(projectNumber)"],
     capture_output=True,
@@ -44,8 +38,6 @@ flow = google_auth_oauthlib.flow.Flow.from_client_config(
     scopes=[
         "https://www.googleapis.com/auth/gmail.modify",
         "https://www.googleapis.com/auth/gmail.labels",
-        "https://www.googleapis.com/auth/calendar.events",
-        "https://www.googleapis.com/auth/bigquery",
     ],
 )
 
@@ -59,7 +51,7 @@ authorization_url, state = flow.authorization_url(
 
 # Append to .env file
 with open(".env", "a") as f:
-    f.write(f"OAUTH_AUTH_URI={authorization_url}\n")
+    f.write(f'OAUTH_AUTH_URI="{authorization_url}"')
 
 
 print("*" * 20)

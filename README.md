@@ -84,7 +84,23 @@ AUTH_ID=agentspace-lab1-auth-id
 STAGING_BUCKET=gs://2025-adk-workshop
 ```
 
-## Part 1 - Create Agentspace Authentication ID
+## Part 1 - Deploy ADK Agent to Agent Engine
+- Run `uv run ae_deploy.py`, this may take about 3mins.
+- Once it is done, you will get a Reasoning `ENGINE_ID` as shown below.
+![image](assets/engine_id.png)
+- Update the ENGINE_ID into .env manually
+```bash
+GOOGLE_CLOUD_PROJECT=hello-world-418507
+GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_GENAI_USE_VERTEXAI=1
+DISPLAY_NAME=agentspace-lab1
+APP_ID=agentspace-dev_1744685873939
+AUTH_ID=agentspace-lab1-auth-id
+STAGING_BUCKET=gs://2025-adk-workshop
+ENGINE_ID=4256345850562740224
+```
+
+## Part 2 - Create Agentspace Authentication ID
 - Run `uv run create_oauth_uri.py`
 - This will create OAUTH URI and store in the .env file.
 - Now your .env file should have a new entry `OAUTH_AUTH_URI`
@@ -97,41 +113,26 @@ DISPLAY_NAME=agentspace-lab1
 APP_ID=agentspace-dev_1744685873939
 AUTH_ID=agentspace-lab1-auth-id
 STAGING_BUCKET=gs://2025-adk-workshop
+ENGINE_ID=4256345850562740224
 OAUTH_AUTH_URI=...
 ```
 
-## Part 2 - Deploy ADK Agent to Agent Engine
-- Run `uv run ae_deploy.py`, this may take about 3mins.
-- Once it is done, you will get a Reasoning `ENGINE_ID` as shown below.
-![image](assets/engine_id.png)
-- Update the ENGINE_ID into .env manually
-
 ## Part 3 - Register with Agentspace
-- Update `register.sh` configuration
-
-    ```bash
-    export PROJECT_NUMBER="671247654914"
-    export APP_ID="APP_ID" # APP_ID in prerequisite
-    export OAUTH_AUTH_URI=111
-    ```
-- Run the command below:
-
-```bash
-bash run_register_auth.sh
-```
-
+- Run `bash register.sh create-auth` to create Agentspace authentication id. Make sure you success message `HTTP Status Code: 200`.
+- Run `bash register.sh register-auth` to register ADK custom agent to Agentspace. Make sure you success message `"state": "ENABLED"`.
 - Go to your Agentspace homepage, click Agents on the left menu, and click refresh.
-- Now you should be able to see your custom ADK agent on Agentspace.
+- Now you should be able to see your custom ADK agent named `agentspace-lab1`.
 
 
 ## Part 4 - Test the ADK Agent
-- When you open the auth agent, you need to login to your personal email to test
-- Authenticate with your personal email.
-- Enter "get user info"
-- Enter "send email to abc@gmail.com with subject:test, body: harlo"
+- When you open the `agentspace-lab1`, you will be asked to login to your email to authenticate
+- Authenticate with your email.
+- Enter "Check authentication"
+- Enter "Send email to weiyih@google.com, subject: agentspace test, body: testing"
 
 
-## Testing
+# Trouble shooting
 
-Q1: Check authentication
-Q2: Send email to weiyih@google.com, subject: agentspace test, body: testing
+## [OPTIONAL] Delete from Agentspace
+- In the event there is problem and you need to register again, run `bash delete_agent.sh` to delete both Agentspace agent and authentication id.
+- Now you can repeat Part 3.
