@@ -1,27 +1,40 @@
 #! /bin/env bash
 
-source configuration.sh
+########################################################
+# UPDATE CONFIGURATION HERE
+########################################################
+# Get project number from GOOGLE_CLOUD_PROJECT environment variable
 
-echo
-echo "********************* Variables *********************"
-echo "PROJECT_NUMBER: ${PROJECT_NUMBER}"
-echo "LOCATION: ${LOCATION}"
-echo "APP_ID: ${APP_ID}"
-echo "DESCRIPTION: ${DESCRIPTION}"
-echo "TOOL_DESCRIPTION: ${TOOL_DESCRIPTION}"
-echo "AUTH_ID: ${AUTH_ID}"
-echo "DISPLAY_NAME: ${DISPLAY_NAME}"
-echo "OLD_AGENT_ID: ${OLD_AGENT_ID}"
-echo "ADK_DEPLOYMENT_ID: ${ADK_DEPLOYMENT_ID}"
-echo "OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID}"
-echo "OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET}"
-echo "OAUTH_AUTH_URI: ${OAUTH_AUTH_URI}"
-echo "OAUTH_TOKEN_URI: ${OAUTH_TOKEN_URI}"
-echo "********************* Variables *********************"
-echo
+GOOGLE_CLOUD_PROJECT="hello-world-418507"
+APP_ID="agentspace-dev_1744685873939" # This is the agentspace engine id
+OAUTH_AUTH_URI="https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=671247654914-onsqf0obdfnkdpr0uj59hruev41u54i1.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fvertexaisearch.cloud.google.com%2Foauth-redirect&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fgmail.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar.readonly&state=yqeQwcuX7kfIlExgKePq8Rhzj1ZpIi&access_type=offline&include_granted_scopes=true&login_hint=hint%40example.com&prompt=consent"
+
+########################################################
+
+if [ -n "$GOOGLE_CLOUD_PROJECT" ]; then
+  PROJECT_NUMBER=$(gcloud projects describe "$GOOGLE_CLOUD_PROJECT" --format="value(projectNumber)")
+else
+  echo "Error: GOOGLE_CLOUD_PROJECT environment variable is not set"
+  exit 1
+fi
+
+DESCRIPTION="This is your AI productivity agent"
+TOOL_DESCRIPTION="You are a AI productivity agent."
+LOCATION="us-central1"
+OAUTH_CLIENT_ID=$(gcloud secrets versions access latest --secret="AGENTSPACE_WEB_CLIENTID" --project="${PROJECT_NUMBER}")
+OAUTH_CLIENT_SECRET=$(gcloud secrets versions access latest --secret="AGENTSPACE_WEB_CLIENTSECRET" --project="${PROJECT_NUMBER}") # pragma: allowlist secret
+OAUTH_TOKEN_URI="https://oauth2.googleapis.com/token"
+
 
 usage() {
-  echo "Usage: $0 {register <ADK_DEPLOYMENT_ID> <DISPLAY_NAME>|list|delete <AGENT_ID>|register-auth <ADK_DEPLOYMENT_ID> <AUTH_ID> <DISPLAY_NAME>|create-auth <AUTH_ID>|delete-auth <AUTH_ID>|update <AGENT_ID> <ADK_DEPLOYMENT_ID> <DISPLAY_NAME>}"
+  echo "Usage: $0 {"
+  echo "  register <ADK_DEPLOYMENT_ID> <DISPLAY_NAME> |"
+  echo "  list [name] |"
+  echo "  delete <AGENT_ID> |"
+  echo "  register-auth <ADK_DEPLOYMENT_ID> <AUTH_ID> <DISPLAY_NAME> |"
+  echo "  update <AGENT_ID> <ADK_DEPLOYMENT_ID> <DISPLAY_NAME> |"
+  echo "  update-auth <AGENT_ID> <ADK_DEPLOYMENT_ID> <AUTH_ID> <DISPLAY_NAME>"
+  echo "}"
   exit 1
 }
 
@@ -66,7 +79,6 @@ case $COMMAND in
     AUTH_ID=$3
     DISPLAY_NAME=$4
 
-    echo "Registering agent with auth_id ${AUTH_ID}..."
     curl -X POST \
       -H "Authorization: Bearer $(gcloud auth print-access-token)" \
       -H "Content-Type: application/json" \
@@ -123,12 +135,44 @@ case $COMMAND in
       -w "\nHTTP Status Code: %{http_code}\n" \
       "https://discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_NUMBER}/locations/global/authorizations/${AUTH_ID}"
     ;;
-  list)
-    curl -X GET \
-      -H "Authorization: Bearer $(gcloud auth print-access-token)" \
-      -H "Content-Type: application/json" \
-      -H "X-Goog-User-Project: ${PROJECT_NUMBER}" \
-      "https://discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_NUMBER}/locations/global/collections/default_collection/engines/${APP_ID}/assistants/default_assistant/agents"
+    list)
+    if [ $# -eq 2 ]; then
+      # If a name parameter is provided, filter the results
+      NAME=$2
+      RESPONSE=$(curl -s -X GET \
+        -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+        -H "Content-Type: application/json" \
+        -H "X-Goog-User-Project: ${PROJECT_NUMBER}" \
+        "https://discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_NUMBER}/locations/global/collections/default_collection/engines/${APP_ID}/assistants/default_assistant/agents")
+
+      # Check if jq is installed
+      if command -v jq &> /dev/null; then
+        # Use jq to filter the response for the agent with the specified displayName
+        # Make the search case-insensitive and allow partial matches
+        FILTERED_RESPONSE=$(echo "$RESPONSE" | jq --arg name "$NAME" '{agents: [.agents[] | select(.displayName | ascii_downcase | contains($name | ascii_downcase))]}')
+
+        # Check if any agents were found
+        AGENT_COUNT=$(echo "$FILTERED_RESPONSE" | jq '.agents | length')
+        if [ "$AGENT_COUNT" -eq 0 ]; then
+          echo "No agents found with name containing '$NAME'."
+          echo "Available agents:"
+          echo "$RESPONSE" | jq '.agents[].displayName'
+        else
+          echo "$FILTERED_RESPONSE"
+        fi
+      else
+        echo "Warning: jq is not installed. Displaying unfiltered results."
+        echo "To filter results, please install jq: https://stedolan.github.io/jq/download/"
+        echo "$RESPONSE"
+      fi
+    else
+      # If no name parameter is provided, return all agents
+      curl -X GET \
+        -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+        -H "Content-Type: application/json" \
+        -H "X-Goog-User-Project: ${PROJECT_NUMBER}" \
+        "https://discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_NUMBER}/locations/global/collections/default_collection/engines/${APP_ID}/assistants/default_assistant/agents"
+    fi
     ;;
   delete)
     if [ $# -ne 2 ]; then
@@ -165,6 +209,36 @@ case $COMMAND in
           "provisioned_reasoning_engine": {
             "reasoning_engine": "projects/'"${PROJECT_NUMBER}"'/locations/'"${LOCATION}"'/reasoningEngines/'"${ADK_DEPLOYMENT_ID}"'"
           }
+        }
+      }'
+    ;;
+  update-auth)
+    if [ $# -ne 5 ]; then
+      echo "Error: update-auth requires AGENT_ID, ADK_DEPLOYMENT_ID, AUTH_ID, and DISPLAY_NAME arguments."
+      usage
+    fi
+    AGENT_ID=$2
+    ADK_DEPLOYMENT_ID=$3
+    AUTH_ID=$4
+    NEW_DISPLAY_NAME=$5
+    curl -X PATCH \
+      -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+      -H "Content-Type: application/json" \
+      -H "X-Goog-User-Project: ${PROJECT_NUMBER}" \
+      "https://discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_NUMBER}/locations/global/collections/default_collection/engines/${APP_ID}/assistants/default_assistant/agents/${AGENT_ID}" \
+      -d '{
+        "displayName": "'"${NEW_DISPLAY_NAME}"'",
+        "description": "'"${DESCRIPTION}"'",
+        "adk_agent_definition": {
+          "tool_settings": {
+            "tool_description": "'"${TOOL_DESCRIPTION}"'"
+          },
+          "provisioned_reasoning_engine": {
+            "reasoning_engine": "projects/'"${PROJECT_NUMBER}"'/locations/'"${LOCATION}"'/reasoningEngines/'"${ADK_DEPLOYMENT_ID}"'"
+          },
+          "authorizations": [
+            "projects/'"${PROJECT_NUMBER}"'/locations/global/authorizations/'"${AUTH_ID}"'"
+          ]
         }
       }'
     ;;

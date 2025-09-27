@@ -6,7 +6,43 @@ import sys
 import time
 
 import vertexai
+from dotenv import load_dotenv
 from google.cloud import secretmanager
+
+load_dotenv()
+
+########################################################
+# Change the following variables to match your project
+########################################################
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
+LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION")
+DISPLAY_NAME = os.getenv("DISPLAY_NAME")
+STAGING_BUCKET = os.getenv("STAGING_BUCKET")
+AUTH_ID = os.getenv("AUTH_ID")
+
+########################################################
+
+# Validate required environment variables
+required_vars = {
+    "GOOGLE_CLOUD_PROJECT": PROJECT_ID,
+    "GOOGLE_CLOUD_LOCATION": LOCATION,
+    "DISPLAY_NAME": DISPLAY_NAME,
+    "STAGING_BUCKET": STAGING_BUCKET,
+    "AUTH_ID": AUTH_ID,
+}
+
+missing_vars = [
+    var_name for var_name, var_value in required_vars.items() if var_value is None
+]
+if missing_vars:
+    raise ValueError(
+        f"Missing required environment variables: {', '.join(missing_vars)}"
+    )
+
+print(f"PROJECT_ID: {PROJECT_ID}")
+print(f"LOCATION: {LOCATION}")
+print(f"DISPLAY_NAME: {DISPLAY_NAME}")
+print(f"STAGING_BUCKET: {STAGING_BUCKET}")
 
 
 def get_secret(secret_id, project_id):
@@ -16,16 +52,10 @@ def get_secret(secret_id, project_id):
     return response.payload.data.decode("UTF-8")
 
 
-########################################################
-# Change the following variables to match your project
-########################################################
-PROJECT_ID = "hello-world-418507"
-LOCATION = "us-central1"
-DISPLAY_NAME = "auth-agent-v10"
-STAGING_BUCKET = "gs://2025-adk-workshop"
-AUTH_ID = get_secret("AGENTSPACE_WEB_AUTH_ID", PROJECT_ID)
-print(f"AUTH_ID: {AUTH_ID}")
-
+ENV_VARS = {
+    "GOOGLE_GENAI_USE_VERTEXAI": "TRUE",
+    "AGENTSPACE_AUTH_ID": AUTH_ID,
+}
 EXTRA_PACKAGES = ["./auth_agent"]
 REQUIREMENTS = [
     "db-dtypes>=1.4.3",
@@ -40,12 +70,7 @@ REQUIREMENTS = [
     "tabulate>=0.9.0",
     "PyJWT>=2.8.0",
 ]
-ENV_VARS = {
-    "GOOGLE_GENAI_USE_VERTEXAI": "TRUE",
-    "AGENTSPACE_AUTH_ID": AUTH_ID,
-}
 
-########################################################
 
 logging.getLogger("google").setLevel(logging.ERROR)
 

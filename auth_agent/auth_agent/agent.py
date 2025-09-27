@@ -25,7 +25,9 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
-AUTH_ID = get_secret("AGENTSPACE_WEB_AUTH_ID", project_id)
+AUTH_ID = os.getenv(
+    "AGENTSPACE_AUTH_ID"
+)  # This is set in .env file (local dev), or in ae_deploy.py (agent engine deployment)
 print(f"PROJECT_ID: {project_id}")
 print(f"AUTH_ID: {AUTH_ID}")
 
@@ -36,7 +38,6 @@ def extract_user_info(access_token: str) -> Dict[str, Any]:
     """
 
     try:
-        # Use Google's OAuth2 API to get token information
         url = f"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}"
         response = requests.get(url)
 
@@ -48,9 +49,6 @@ def extract_user_info(access_token: str) -> Dict[str, Any]:
                 "user_info": token_info,
             }
         else:
-            logger.error(
-                f"Failed to get token info from Google API: {response.status_code} - {response.text}"
-            )
             return {
                 "status": "error",
                 "message": "Failed to get token info from Google API: {response.status_code} - {response.text}",
@@ -58,10 +56,13 @@ def extract_user_info(access_token: str) -> Dict[str, Any]:
 
     except Exception as e:
         logger.error(f"Error extracting user info from Google API: {e}")
-        return None
+        return {
+            "status": "error",
+            "message": f"Error: {e}",
+        }
 
 
-def get_access_token(tool_context: ToolContext) -> str:
+def get_access_token(tool_context: ToolContext) -> str | None:
     """Retrieve the access token from the tool context."""
     if f"temp:{AUTH_ID}" in tool_context.state:
         token = tool_context.state[f"temp:{AUTH_ID}"]
@@ -83,13 +84,6 @@ def check_auth(tool_context: ToolContext):
     Returns:
         dict: A dictionary indicating authentication status and user information or error message.
     """
-    print(f"check_auth state before: {tool_context.state.to_dict()}")
-    if f"temp:{AUTH_ID}" not in tool_context.state:
-        print(f"No AUTH_ID found in session state: {AUTH_ID}")
-        return {
-            "status": "not_authenticated",
-            "message": f"Explain there is no {AUTH_ID} found in session state",
-        }
 
     try:
         access_token = get_access_token(tool_context)
@@ -210,14 +204,18 @@ root_agent = LlmAgent(
     name="root_agent",
     instruction="""You are a helpful assistant that can help with authentication and sending emails.
 
-       1. call check_auth to retrieve the following information:
+    1. If the user says check_auth:
+       1.1 call check_auth to retrieve the following information:
           - Username
           - Email
           - Access Scope/Permissions
 
-       2. Send emails through Gmail API with send_email.
+    2. If the user says send_email:
+       2.1 Ask for the recipient's email address, subject, and body of the email.
+       2.2 Send emails through Gmail API with send_email.
 
-       The authentication function will return the authentication status and detailed user information.
+    3. Do not answer any other questions. Politely inform the user that you can only assist with authentication and sending emails.
+
     """,
     tools=[check_auth, send_email],
     # before_agent_callback=before_agent_callback,
