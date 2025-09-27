@@ -230,7 +230,6 @@ def main():
         init_vertexai()
         asyncio.run(local_test())
         engine_id = deploy_agent()
-        test_on_cloud(engine_id)
         print(f"\nAll {len(STEPS)}/{len(STEPS)} steps completed successfully.")
     except Exception as e:
         print(f"\nError: {e}")

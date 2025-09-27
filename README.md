@@ -44,6 +44,21 @@ The repository is organized into the following structure:
 
 
 ## Prerequisites
+- Create agentspace `Client ID` and `Client SECRET` using GCP Auth Platform for `Web Application` type. Download the JSON file.
+
+- Copy and paste to store the content of the client secret JSON in Google Secret Manager using key `AGENTSPACE_WEB_SECRET_JSON`.
+
+- Go to IAM, grant Reasoning Engine service account permission `secretmanager.versions.access`.
+
+- Choose a unique name for authentication id, say `AUTH_ID=agentspace-lab1-auth-id`, note down the `AUTH_ID` in .env file.
+
+- Creata new Agentspace app using console, say `APP_ID=agentspace-dev_1744685873939`, note down the `APP_ID` in .env file.
+![image](assets/app_id.png)
+
+- [TODO - automate] Create a GCS bucket name of your choice, say `STAGING_BUCKET=gs://2025-adk-workshop`, note down the `APP_ID` in .env file.
+
+
+## Setup
 - Open Cloud Shell, and click "Open Editor".
 
 ![image](assets/cloudshell.png)
@@ -56,41 +71,40 @@ The repository is organized into the following structure:
 
 ![image](assets/open_folder.png)
 
-- Create agentspace `Client ID` and `Client SECRET` using GCP Auth Platform for `Web Application` type. Download the JSON file.
+## Part 0 - Update .env file
+- Verify that you have updated the .env file, it should look as follows:
 
-- Copy and paste to store the content of the client secret JSON in Google Secret Manager using key `AGENTSPACE_WEB_SECRET_JSON`.
-
-- Go to IAM, grant Reasoning Engine service account permission `secretmanager.versions.access`.
-
-- Choose a value of your choice, say `my-unique-auth-id`, and store the value in Google Secret Manager using key `AGENTSPACE_WEB_AUTH_ID`
-
-- Create a GCS bucket name of your choice, say `MY_GCS_BUCKET`. The name need to be unique globally.
-
-- Creata new Agentspace APP. One it is done, note down the `APP_ID` in .env as shown below.
-![image](assets/app_id.png)
+```bash
+GOOGLE_CLOUD_PROJECT=hello-world-418507
+GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_GENAI_USE_VERTEXAI=1
+DISPLAY_NAME=agentspace-lab1
+APP_ID=agentspace-dev_1744685873939
+AUTH_ID=agentspace-lab1-auth-id
+STAGING_BUCKET=gs://2025-adk-workshop
+```
 
 ## Part 1 - Create Agentspace Authentication ID
-- Open `create_oauth_uri.py` notebook
-- Update the PROJECT_ID and PROJECT_NUMBER following configuration in Step 1
-    ```bash
-    PROJECT_ID = "hello-world-418507"
-    PROJECT_NUMBER = "671247654914"
-    ```
-- Execute all the cell for Step 1 and 2.
-- Do not run Step 3, unless you want to delete the Authentication ID after the lab.
+- Run `uv run create_oauth_uri.py`
+- This will create OAUTH URI and store in the .env file.
+- Now your .env file should have a new entry `OAUTH_AUTH_URI`
+
+```bash
+GOOGLE_CLOUD_PROJECT=hello-world-418507
+GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_GENAI_USE_VERTEXAI=1
+DISPLAY_NAME=agentspace-lab1
+APP_ID=agentspace-dev_1744685873939
+AUTH_ID=agentspace-lab1-auth-id
+STAGING_BUCKET=gs://2025-adk-workshop
+OAUTH_AUTH_URI=...
+```
 
 ## Part 2 - Deploy ADK Agent to Agent Engine
-- Open `ae_deploy.py`
-- Update `ae_deploy.py` with the correct configuration values.
-    ```python
-    PROJECT_ID = "hello-world-418507"
-    LOCATION = "us-central1"
-    DISPLAY_NAME = "TEST_AUTH_ID"
-    STAGING_BUCKET = "gs://MY_GCS_BUCKET"
-    ```
-- Deploy ADK agent to Agent Engine using `uv run ae_deploy.py`, this may take about 3mins.
+- Run `uv run ae_deploy.py`, this may take about 3mins.
 - Once it is done, you will get a Reasoning `ENGINE_ID` as shown below.
 ![image](assets/engine_id.png)
+
 
 ## Part 3 - Register with Agentspace
 - Update `configuration.sh` configuration, then run the script.
