@@ -4,9 +4,15 @@
 # UPDATE CONFIGURATION HERE
 ########################################################
 
-export ADK_DEPLOYMENT_ID=7028311421209280512 # This is the new reasoning engine id
-export DISPLAY_NAME=agentspace-lab1
-export AUTH_ID=agentspace-lab1-auth-id
+# Source environment variables from .env file
+source .env
+
+# Print out the configuration
+echo "run_register.sh config:"
+echo "  ADK_DEPLOYMENT_ID: $ENGINE_ID"
+echo "  DISPLAY_NAME: $DISPLAY_NAME"
+echo "  AUTH_ID: $AUTH_ID"
+echo
 ########################################################
 
 # Delete existing ADK Agent with the same DISPLAY NAME if any

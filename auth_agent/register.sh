@@ -5,9 +5,22 @@
 ########################################################
 # Get project number from GOOGLE_CLOUD_PROJECT environment variable
 
-GOOGLE_CLOUD_PROJECT="hello-world-418507"
-APP_ID="agentspace-dev_1744685873939" # This is the agentspace engine id
-OAUTH_AUTH_URI="https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=671247654914-onsqf0obdfnkdpr0uj59hruev41u54i1.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fvertexaisearch.cloud.google.com%2Foauth-redirect&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fgmail.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar.readonly&state=yqeQwcuX7kfIlExgKePq8Rhzj1ZpIi&access_type=offline&include_granted_scopes=true&login_hint=hint%40example.com&prompt=consent"
+# Source environment variables from .env file
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+  source "${SCRIPT_DIR}/.env"
+  echo "Loaded environment variables from .env file"
+else
+  echo "Warning: .env file not found in ${SCRIPT_DIR}"
+fi
+
+# Print out the configuration
+echo "  register.sh config:"
+echo "     GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT}"
+echo "     APP_ID: ${APP_ID}"
+echo "     OAUTH_AUTH_URI: ${OAUTH_AUTH_URI}"
 
 ########################################################
 
