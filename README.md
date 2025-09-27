@@ -62,15 +62,15 @@ The repository is organized into the following structure:
 
 - Go to IAM, grant Reasoning Engine service account permission `secretmanager.versions.access`.
 
-- Choose a value of your choice, say `TEST_AUTH_ID`, and store the value in Google Secret Manager using key `AGENTSPACE_WEB_AUTH_ID`
+- Choose a value of your choice, say `my-unique-auth-id`, and store the value in Google Secret Manager using key `AGENTSPACE_WEB_AUTH_ID`
 
 - Create a GCS bucket name of your choice, say `MY_GCS_BUCKET`. The name need to be unique globally.
 
-- Creata new Agentspace APP. One it is done, note down the `APP_ID` as shown below.
+- Creata new Agentspace APP. One it is done, note down the `APP_ID` in .env as shown below.
 ![image](assets/app_id.png)
 
 ## Part 1 - Create Agentspace Authentication ID
-- Open `agent_registration.ipynb` notebook
+- Open `create_oauth_uri.py` notebook
 - Update the PROJECT_ID and PROJECT_NUMBER following configuration in Step 1
     ```bash
     PROJECT_ID = "hello-world-418507"

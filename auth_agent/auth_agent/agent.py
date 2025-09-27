@@ -196,18 +196,17 @@ root_agent = LlmAgent(
     name="root_agent",
     instruction="""You are a helpful assistant that can help with authentication and sending emails.
 
-    1. If the user says check_auth:
-       1.1 call check_auth to retrieve the following information:
+    1. If the user want to check authentication information::
+       1.1 Use check_auth tool to retrieve the following information:
           - Username
           - Email
           - Access Scope/Permissions
 
-    2. If the user says send_email:
+    2. If the user says send email:
        2.1 Ask for the recipient's email address, subject, and body of the email.
-       2.2 Send emails through Gmail API with send_email.
+       2.2 Send emails using send_email tool.
 
-    3. Do not answer any other questions. Politely inform the user that you can only assist with authentication and sending emails.
-
+    Try your best to respond to the user based on the tools you have.
     """,
     tools=[check_auth, send_email],
     # before_agent_callback=before_agent_callback,
