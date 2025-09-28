@@ -11,15 +11,21 @@ The repository is organized into the following structure:
 .
 ├── auth_agent
 │   ├── ae_deploy.py
-│   ├── agent_registration.ipynb
+│   ├── create_oauth_uri.py
+│   ├── delete_agent.sh
 │   ├── auth_agent
 │   │   ├── __init__.py
 │   │   └── agent.py
-│   ├── configuration.sh
 │   ├── pyproject.toml
 │   ├── register.sh
-│   ├── run_register_auth.sh
 │   └── uv.lock
+├── assets
+│   ├── app_id.png
+│   ├── cloudshell.png
+│   ├── engine_id.png
+│   ├── open_folder.png
+│   ├── register.png
+│   └── terminal.png
 └── README.md
 ```
 
@@ -30,32 +36,37 @@ The repository is organized into the following structure:
 
 **Core Files:**
 - **`ae_deploy.py`** - Python script for deploying the ADK agent to Agent Engine
-- **`agent_registration.ipynb`** - Jupyter notebook for creating Agentspace Authentication ID
-- **`configuration.sh`** - Shell script for setting environment variables and configuration
-- **`run_register_auth.sh`** - Main script to execute the registration process with authentication
-- **`register.sh`** - Helper script for the registration process
+- **`create_oauth_uri.py`** - Python script for generating OAuth authorization URI and storing it in .env
+- **`delete_agent.sh`** - Shell script for deleting existing agent and authentication ID from Agentspace
+- **`register.sh`** - Shell script for registering agent with Agentspace and managing authentication
 
 **Python Virtual Environment:**
 - **`pyproject.toml`** - Python project configuration and dependencies
 - **`uv.lock`** - Lock file for UV package manager dependencies
 
 **`/auth_agent/auth_agent/` ADK Agent directory:**
-- **`agent.py`** - Python package containing the actual ADK agent implementation:
+- **`__init__.py`** - Python package initialization file
+- **`agent.py`** - ADK agent implementation with authentication and email sending capabilities
 
 
 ## Prerequisites
-- Create agentspace `Client ID` and `Client SECRET` using GCP Auth Platform for `Web Application` type. Download the JSON file.
+- Create agentspace OAuth 2.0 credentials using GCP Auth Platform for `Web Application` type. Download the JSON file.
 
-- Copy and paste to store the content of the client secret JSON in Google Secret Manager using key `AGENTSPACE_WEB_SECRET_JSON`.
+- Store the credentials in Google Secret Manager (you need all three):
+  - Store the entire JSON file content with key `AGENTSPACE_WEB_SECRET_JSON` (used by `create_oauth_uri.py`)
+  - Store just the Client ID with key `AGENTSPACE_WEB_CLIENTID` (used by `register.sh`)
+  - Store just the Client Secret with key `AGENTSPACE_WEB_CLIENTSECRET` (used by `register.sh`)
 
 - Go to IAM, grant Reasoning Engine service account permission `secretmanager.versions.access`.
 
-- Choose a unique name for authentication id, say `AUTH_ID=agentspace-lab1-auth-id`, note down the `AUTH_ID` in .env file.
+- Choose a unique name for authentication id, say `AUTH_ID=agentspace-lab1-auth-id`.
 
-- Creata new Agentspace app using console, say `APP_ID=agentspace-dev_1744685873939`, note down the `APP_ID` in .env file.
+- Create new Agentspace app using console, say `APP_ID=agentspace-dev_1744685873939`.
 ![image](assets/app_id.png)
 
-- [TODO - automate] Create a GCS bucket name of your choice, say `STAGING_BUCKET=gs://2025-adk-workshop`, note down the `APP_ID` in .env file.
+- [TODO - automate] Create a GCS bucket name of your choice, say `STAGING_BUCKET=gs://2025-adk-workshop`.
+
+- Create a `.env` file in the `auth_agent` directory with all the required environment variables (see Part 0 below).
 
 
 ## Setup
@@ -67,12 +78,13 @@ The repository is organized into the following structure:
 
 ![image](assets/terminal.png)
 
-- Open the repo folder `alchemay-part1`.
+- Open the repo folder `alchemy-part1`.
 
 ![image](assets/open_folder.png)
 
-## Part 0 - Update .env file
-- Verify that you have updated the .env file, it should look as follows:
+## Part 0 - Create and Update .env file
+- Create a `.env` file in the `auth_agent` directory
+- Update the .env file with your project-specific values. It should look as follows:
 
 ```bash
 GOOGLE_CLOUD_PROJECT=hello-world-418507
@@ -101,9 +113,9 @@ STAGING_BUCKET=gs://2025-adk-workshop
 ENGINE_ID=4256345850562740224
 ```
 
-## Part 2 - Create Agentspace Authentication ID
+## Part 2 - Generate OAuth Authorization URI
 - Run `uv run create_oauth_uri.py`
-- This will create OAUTH URI and store in the .env file.
+- This will generate the OAuth authorization URI and append it to the .env file.
 - Now your .env file should have a new entry `OAUTH_AUTH_URI`
 
 ```bash
@@ -119,8 +131,8 @@ OAUTH_AUTH_URI=...
 ```
 
 ## Part 3 - Register with Agentspace
-- Run `bash register.sh create-auth` to create Agentspace authentication id. Make sure you success message `HTTP Status Code: 200`.
-- Run `bash register.sh register-auth` to register ADK custom agent to Agentspace. Make sure you success message `"state": "ENABLED"`.
+- Run `bash register.sh create-auth` to create Agentspace authentication configuration. Make sure you see success message `HTTP Status Code: 200`.
+- Run `bash register.sh register-auth` to register ADK custom agent to Agentspace with authentication enabled. Make sure you see success message `"state": "ENABLED"`.
 - Go to your Agentspace homepage, click Agents on the left menu, and click refresh.
 - Now you should be able to see your custom ADK agent named `agentspace-lab1`.
 
@@ -132,8 +144,20 @@ OAUTH_AUTH_URI=...
 - Enter "Send email to weiyih@google.com, subject: agentspace test, body: testing"
 
 
-# Trouble shooting
+# Troubleshooting
 
-## [OPTIONAL] Delete from Agentspace
-- In the event there is problem and you need to register again, run `bash delete_agent.sh` to delete both Agentspace agent and authentication id.
-- Now you can repeat Part 3.
+## Delete and Re-register Agent
+If you encounter issues and need to start over:
+- Run `bash delete_agent.sh` to delete both the Agentspace agent and authentication configuration
+- Then repeat Part 3 to register again
+
+## Available Commands in register.sh
+The `register.sh` script supports the following commands:
+- `register` - Register agent without authentication
+- `register-auth` - Register agent with authentication
+- `create-auth` - Create authentication configuration
+- `delete-auth` - Delete authentication configuration
+- `list [name]` - List all agents or filter by name
+- `delete <AGENT_ID>` - Delete a specific agent
+- `update <AGENT_ID>` - Update an existing agent
+- `update-auth <AGENT_ID>` - Update an agent with authentication
