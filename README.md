@@ -57,6 +57,11 @@ The repository is organized into the following structure:
   - Store just the Client ID with key `AGENTSPACE_WEB_CLIENTID` (used by `register.sh`)
   - Store just the Client Secret with key `AGENTSPACE_WEB_CLIENTSECRET` (used by `register.sh`)
 
+- Manually create Reasoning Enginer service account.
+```bash
+gcloud beta services identity create --service=aiplatform.googleapis.com --project=PROJECT_ID
+```
+
 - Go to IAM, grant Reasoning Engine service account permission `secretmanager.versions.access`.
 
 - Choose a unique name for authentication id, say `AUTH_ID=agentspace-lab1-auth-id`.
