@@ -46,7 +46,7 @@ flow = google_auth_oauthlib.flow.Flow.from_client_config(
 flow.redirect_uri = "https://vertexaisearch.cloud.google.com/oauth-redirect"
 
 authorization_url, state = flow.authorization_url(
-    access_type="online",  # Recommended, enable offline access so that you can refresh an access token without re-prompting
+    access_type="offline",  # Recommended, enable offline access so that you can refresh an access token without re-prompting
     include_granted_scopes="true",
     prompt="consent",
 )
