@@ -38,7 +38,7 @@ flow = google_auth_oauthlib.flow.Flow.from_client_config(
     scopes=[
         "https://www.googleapis.com/auth/drive.readonly",
         "https://www.googleapis.com/auth/drive.metadata.readonly",
-        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/gmail.send",
         "https://www.googleapis.com/auth/calendar.readonly",
     ],
 )
