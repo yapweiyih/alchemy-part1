@@ -59,13 +59,10 @@ ENV_VARS = {
 EXTRA_PACKAGES = ["./auth_agent"]
 REQUIREMENTS = [
     "db-dtypes>=1.4.3",
-    "google-adk>=1.7.0",
-    "google-auth-oauthlib>=1.2.2",
-    "google-cloud-aiplatform>=1.105.0",
-    "google-cloud-bigquery-connection>=1.18.3",
-    "google-cloud-bigquery-storage>=2.32.0",
+    "google-adk==1.16.0",
+    "google-cloud-aiplatform==1.121.0",
     "google-genai>=1.27.0",
-    "ipykernel>=6.29.5",
+    "google-auth-oauthlib>=1.2.2",
     "pandas>=2.3.0",
     "tabulate>=0.9.0",
     "PyJWT>=2.8.0",
@@ -121,9 +118,8 @@ def init_vertexai():
 
 
 def import_agent():
-    from vertexai.preview import reasoning_engines
-
     from auth_agent.agent import root_agent
+    from vertexai.preview import reasoning_engines
 
     return reasoning_engines, root_agent
 
