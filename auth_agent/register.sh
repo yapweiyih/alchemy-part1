@@ -105,6 +105,29 @@ case $COMMAND in
         }
       }'
     ;;
+  register-auth-v2)
+    # No additional arguments needed - using values from .env
+    curl -X POST \
+      -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+      -H "Content-Type: application/json" \
+      -H "X-Goog-User-Project: ${PROJECT_NUMBER}" \
+      "https://discoveryengine.googleapis.com/v1alpha/projects/${PROJECT_NUMBER}/locations/global/collections/default_collection/engines/${APP_ID}/assistants/default_assistant/agents" \
+      -d '{
+        "displayName": "'"${DISPLAY_NAME}"'",
+        "description": "'"${DESCRIPTION}"'",
+        "adk_agent_definition": {
+          "tool_settings": {
+            "tool_description": "'"${TOOL_DESCRIPTION}"'"
+          },
+          "provisioned_reasoning_engine": {
+            "reasoning_engine": "projects/'"${PROJECT_NUMBER}"'/locations/'"${LOCATION}"'/reasoningEngines/'"${ADK_DEPLOYMENT_ID}"'"
+          },
+          "authorization_config": {
+            "tool_authorizations": ["projects/'"${PROJECT_NUMBER}"'/locations/global/authorizations/'"${AUTH_ID}"'"]
+          }
+        }
+      }'
+    ;;
   create-auth)
     # No additional arguments needed - using AUTH_ID from .env
     curl -X POST \
