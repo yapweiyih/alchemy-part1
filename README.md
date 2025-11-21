@@ -4,52 +4,13 @@
 
 This repository provides a complete solution for deploying custom ADK (Agent Development Kit) agents to Google Cloud's Agentspace platform with built-in authentication support. The primary goal is to enable developers to create, deploy, and register custom AI agents that can authenticate users via OAuth2 (using personal email accounts) and perform authorized actions on their behalf, such as accessing user information and sending emails. The repository streamlines the entire deployment pipeline from initial setup in Google Cloud Shell to final registration and testing in Agentspace.
 
-## File Structure
-
-The repository is organized into the following structure:
-```text
-.
-├── auth_agent
-│   ├── ae_deploy.py
-│   ├── create_oauth_uri.py
-│   ├── delete_agent.sh
-│   ├── download_logs.py
-│   ├── auth_agent
-│   │   ├── __init__.py
-│   │   └── agent.py
-│   ├── pyproject.toml
-│   ├── register.sh
-│   └── uv.lock
-├── assets
-│   ├── app_id.png
-│   ├── cloudshell.png
-│   ├── engine_id.png
-│   ├── open_folder.png
-│   ├── register.png
-│   └── terminal.png
-└── README.md
-```
 
 ### Root Level Files:
-- **`README.md`** - Main documentation with step-by-step deployment instructions
-
-### `/auth_agent/` Directory:
-
-**Core Files:**
 - **`ae_deploy.py`** - Python script for deploying the ADK agent to Agent Engine
 - **`create_oauth_uri.py`** - Python script for generating OAuth authorization URI and storing it in .env
 - **`delete_agent.sh`** - Shell script for deleting existing agent and authentication ID from Agentspace
 - **`download_logs.py`** - Python script for downloading and analyzing GCP Cloud Logging logs from deployed Reasoning Engine
 - **`register.sh`** - Shell script for registering agent with Agentspace and managing authentication
-
-**Python Virtual Environment:**
-- **`pyproject.toml`** - Python project configuration and dependencies
-- **`uv.lock`** - Lock file for UV package manager dependencies
-
-**`/auth_agent/auth_agent/` ADK Agent directory:**
-- **`__init__.py`** - Python package initialization file
-- **`agent.py`** - ADK agent implementation with authentication and email sending capabilities
-
 
 ## Prerequisites
 - Create agentspace OAuth 2.0 credentials using GCP Auth Platform for `Web Application` type. Download the JSON file.
@@ -200,13 +161,87 @@ If you encounter issues and need to start over:
 - Run `bash delete_agent.sh` to delete both the Agentspace agent and authentication configuration
 - Then repeat Part 3 to register again
 
-## Available Commands in register.sh
-The `register.sh` script supports the following commands:
-- `register` - Register agent without authentication
-- `register-auth` - Register agent with authentication
-- `create-auth` - Create authentication configuration
-- `delete-auth` - Delete authentication configuration
-- `list [name]` - List all agents or filter by name
-- `delete <AGENT_ID>` - Delete a specific agent
-- `update <AGENT_ID>` - Update an existing agent
-- `update-auth <AGENT_ID>` - Update an agent with authentication
+
+# 3 legged OAuth local and remote testing (WIP)
+
+## Local Development
+
+The application supports **3 methods** for obtaining ServiceNow access tokens via `get_adk_agent_token()`:
+
+### Method 1: Direct Access Token (Recommended for Quick Testing)
+Use a pre-obtained access token directly from `.env` file.
+
+**Setup:**
+1. Update `.env` file with your access token:
+   ```bash
+   ACCESS_TOKEN="your_servicenow_access_token_here"
+   DEBUG=1  # Can be 0 or 1, doesn't matter when ACCESS_TOKEN is set
+   ```
+
+2. Update Secret Manager with ServiceNow OAuth credentials:
+   ```bash
+   AUSPOST_CLIENT_ID="your_client_id"
+   AUSPOST_CLIENT_SECRET="your_client_secret" # pragma: allowlist secret
+   ```
+
+3. Run the development server:
+   ```bash
+   uv run adk web \
+       --log_level DEBUG --reload_agents
+   ```
+
+**When to use:** Quick testing, debugging, or when you already have a valid access token.
+
+---
+
+### Method 2: OAuth Flow with Token Refresh (Recommended for Local Development)
+Automatically handles OAuth authorization and token refresh using `token_info.json`.
+
+**Setup:**
+1. Update `.env` file (do NOT set ACCESS_TOKEN):
+   ```bash
+   DEBUG=1  # Must be set to 1
+   SERVICENOW_INSTANCE=ausposttest.service-now.com
+   GOOGLE_CLOUD_PROJECT=your_project_id
+   ```
+
+2. Ensure SNOW redirect URL includes: `http://localhost:8080/callback`
+
+3. Update Secret Manager with OAuth credentials (same as Method 1)
+
+4. Run the development server:
+   ```bash
+   uv run adk web \
+       --log_level DEBUG --reload_agents
+   ```
+
+**How it works:**
+- First run: Opens browser for OAuth authorization, saves token to `token_info.json`
+- Subsequent runs: Reuses token from `token_info.json`
+- Auto-refresh: Automatically refreshes expired tokens using refresh token
+- Token expires: Re-initiates OAuth flow if refresh token is invalid
+
+**When to use:** Regular local development with automatic token management.
+
+---
+
+### Method 3: Agentspace Access Token (Production/Agent Engine)
+Uses access token from ADK session context (Agentspace/Agent Engine deployment).
+
+**Setup:**
+1. Update `.env` file (do NOT set ACCESS_TOKEN):
+   ```bash
+   DEBUG=0  # Must be set to 0
+   AUTH_ID=your_auth_id  # Must match GE registration
+   ```
+
+2. Ensure SNOW redirect URL is set as: `https://vertexsearch.cloud.google.com/oauth-redirect`
+
+3. Deploy to Agent Engine (see Agent Engine Deployment section)
+
+**How it works:**
+- Token is retrieved from `callback_context.state[AUTH_ID]`
+- Token is managed by Agentspace OAuth flow
+- No local token storage required
+
+**When to use:** Production deployment on Agent Engine, testing with Agentspace.
