@@ -197,3 +197,5 @@ credentials.json
 /obsolete
 setup_env.sh
 client_secret.json
+/wy_tutorial
+**/logs
