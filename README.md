@@ -13,6 +13,7 @@ The repository is organized into the following structure:
 │   ├── ae_deploy.py
 │   ├── create_oauth_uri.py
 │   ├── delete_agent.sh
+│   ├── download_logs.py
 │   ├── auth_agent
 │   │   ├── __init__.py
 │   │   └── agent.py
@@ -38,6 +39,7 @@ The repository is organized into the following structure:
 - **`ae_deploy.py`** - Python script for deploying the ADK agent to Agent Engine
 - **`create_oauth_uri.py`** - Python script for generating OAuth authorization URI and storing it in .env
 - **`delete_agent.sh`** - Shell script for deleting existing agent and authentication ID from Agentspace
+- **`download_logs.py`** - Python script for downloading and analyzing GCP Cloud Logging logs from deployed Reasoning Engine
 - **`register.sh`** - Shell script for registering agent with Agentspace and managing authentication
 
 **Python Virtual Environment:**
@@ -150,6 +152,48 @@ OAUTH_AUTH_URI=...
 
 
 # Troubleshooting
+
+## Downloading and Analyzing Logs
+
+The `download_logs.py` script helps you debug and monitor your deployed ADK agent by downloading logs from GCP Cloud Logging.
+
+### Basic Usage
+```bash
+cd auth_agent
+uv run download_logs.py
+```
+
+### Command-Line Options
+- `--project-id` - GCP project ID (default: hello-world-418507)
+- `--reasoning-engine-id` - Reasoning Engine ID (default: 8904095850381180928)
+- `--location` - GCP location (default: us-central1)
+- `--minutes` - Number of minutes to look back (default: 360)
+- `--output-dir` - Output directory for JSON file (default: logs)
+
+### Example Usage
+```bash
+# Download logs from the last 10 hours
+uv run download_logs.py --minutes 600
+
+# Download logs for a specific Reasoning Engine
+uv run download_logs.py --reasoning-engine-id 7957944104447377408
+
+# Specify custom output directory
+uv run download_logs.py --output-dir ./my-logs
+```
+
+### Output
+The script will:
+1. Query GCP Cloud Logging for the specified time range
+2. Extract textPayload fields from log entries
+3. Save results to a timestamped JSON file (e.g., `downloaded-logs-20250121-173000.json`)
+4. Print all text payloads to stdout for quick review
+
+This is particularly useful for:
+- Debugging agent execution issues
+- Monitoring agent behavior in production
+- Reviewing historical agent interactions
+- Troubleshooting authentication problems
 
 ## Delete and Re-register Agent
 If you encounter issues and need to start over:
