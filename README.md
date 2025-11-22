@@ -1,5 +1,7 @@
 # Deploy Custom ADK Agent to Agentspace with authentication support.
 
+Author: @weiyih
+
 ## Repository Objective
 
 This repository provides a complete solution for deploying custom ADK (Agent Development Kit) agents to Google Cloud's Agentspace platform with built-in authentication support. The primary goal is to enable developers to create, deploy, and register custom AI agents that can authenticate users via OAuth2 (using personal email accounts) and perform authorized actions on their behalf, such as accessing user information and sending emails. The repository streamlines the entire deployment pipeline from initial setup in Google Cloud Shell to final registration and testing in Agentspace.
@@ -163,6 +165,24 @@ If you encounter issues and need to start over:
 
 
 # 3 legged OAuth local and remote testing (WIP)
+
+```markdown
+┌─────────────────────────────────────────────────────────────┐
+│                  get_adk_agent_token()                      │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ Decision Flow:                                       │   │
+│  │                                                      │   │
+│  │ 1. Check if ACCESS_TOKEN exists in .env              │   │
+│  │    ├─ YES → Return ACCESS_TOKEN (Method 1)           │   │
+│  │    └─ NO  → Continue to step 2                       │   │
+│  │                                                      │   │
+│  │ 2. Check if DEBUG == "0"                             │   │
+│  │    └─ NO  → get_valid_token() (Method 2)             │   │
+│  │    ├─ YES → get_agentspace_access_token() (Method 3) │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Local Development
 
