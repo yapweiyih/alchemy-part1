@@ -121,10 +121,10 @@ case $COMMAND in
           },
           "provisioned_reasoning_engine": {
             "reasoning_engine": "projects/'"${PROJECT_NUMBER}"'/locations/'"${LOCATION}"'/reasoningEngines/'"${ADK_DEPLOYMENT_ID}"'"
-          },
-          "authorization_config": {
-            "tool_authorizations": ["projects/'"${PROJECT_NUMBER}"'/locations/global/authorizations/'"${AUTH_ID}"'"]
           }
+        },
+        "authorization_config": {
+            "tool_authorizations": ["projects/'"${PROJECT_NUMBER}"'/locations/global/authorizations/'"${AUTH_ID}"'"]
         }
       }'
     ;;
