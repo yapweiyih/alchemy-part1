@@ -1,7 +1,8 @@
 # Deploy Custom ADK Agent to Agentspace with authentication support.
 
-Author: @weiyih
-Reference: https://docs.cloud.google.com/gemini/enterprise/docs/register-and-manage-an-adk-agent
+- Author: @weiyih
+
+- Reference: https://docs.cloud.google.com/gemini/enterprise/docs/register-and-manage-an-adk-agent
 
 ## Repository Objective
 
