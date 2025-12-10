@@ -14,3 +14,8 @@ repos:
     rev: v1.5.0
     hooks:
     -   id: detect-secrets
+  - repo: https://github.com/ansys/pre-commit-hooks
+    rev: v0.5.2 # Another option for adding headers
+    hooks:
+      - id: add-license-headers
+        files: '\.(py|js|java|cpp)$'
