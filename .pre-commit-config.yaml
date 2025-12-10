@@ -15,7 +15,11 @@ repos:
     hooks:
     -   id: detect-secrets
   - repo: https://github.com/ansys/pre-commit-hooks
-    rev: v0.5.2 # Another option for adding headers
+    rev: v0.5.2
     hooks:
       - id: add-license-headers
         files: '\.(py|js|java|cpp)$'
+        args:
+          - --custom_copyright=Google LLC
+          - --custom_license=Apache-2.0
+          - --custom_template=google
